@@ -37,6 +37,8 @@ services:
     image: nginx:latest
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    tmpfs:
+      - /tmp/people-cache:rw,nodev,nosuid,size=500M
     depends_on:
       - api1
       - api2
