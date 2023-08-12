@@ -27,14 +27,68 @@ pub struct Person {
 }
 
 #[derive(Clone, Deserialize)]
+#[serde(try_from = "String")]
+pub struct PersonName(String);
+
+impl TryFrom<String> for PersonName {
+    type Error = &'static str;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        if value.len() <= 100 {
+            Ok(PersonName(value))
+        } else {
+            Err("name is to big")
+        }
+    }
+}
+
+#[derive(Clone, Deserialize)]
+#[serde(try_from = "String")]
+pub struct Nick(String);
+
+impl TryFrom<String> for Nick {
+    type Error = &'static str;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        if value.len() <= 32 {
+            Ok(Self(value))
+        } else {
+            Err("nick is to big")
+        }
+    }
+}
+
+#[derive(Clone, Deserialize)]
+#[serde(try_from = "String")]
+pub struct Tech(String);
+
+impl TryFrom<String> for Tech {
+    type Error = &'static str;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        if value.len() <= 32 {
+            Ok(Self(value))
+        } else {
+            Err("tech is to big")
+        }
+    }
+}
+
+impl From<Tech> for String {
+    fn from(value: Tech) -> Self {
+        value.0
+    }
+}
+
+#[derive(Clone, Deserialize)]
 pub struct NewPerson {
     #[serde(rename = "nome")]
-    pub name: String,
+    pub name: PersonName,
     #[serde(rename = "apelido")]
-    pub nick: String,
+    pub nick: Nick,
     #[serde(rename = "nascimento", with = "date_format")]
     pub birth_date: Date,
-    pub stack: Option<Vec<String>>,
+    pub stack: Option<Vec<Tech>>,
 }
 
 type AppState = Arc<RwLock<HashMap<Uuid, Person>>>;
@@ -83,10 +137,12 @@ async fn create_person(
     let id = Uuid::now_v7();
     let person = Person {
         id,
-        name: new_person.name,
+        name: new_person.name.0,
         birth_date: new_person.birth_date,
-        nick: new_person.nick,
-        stack: new_person.stack,
+        nick: new_person.nick.0,
+        stack: new_person
+            .stack
+            .map(|stack| stack.into_iter().map(String::from).collect()),
     };
 
     people.write().await.insert(id, person.clone());
