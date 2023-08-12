@@ -67,7 +67,7 @@ impl PostgresRepository {
         .await
     }
 
-    pub async fn count_people(&self) -> Result<i32, sqlx::Error> {
+    pub async fn count_people(&self) -> Result<i64, sqlx::Error> {
         sqlx::query("SELECT count(*) FROM people")
             .fetch_one(&self.pool)
             .await
