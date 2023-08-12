@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, env, net::SocketAddr, sync::Arc};
 
 use axum::{
     extract::{Path, State},
@@ -8,7 +8,7 @@ use axum::{
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
-use time::{macros::date, Date};
+use time::Date;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
@@ -41,19 +41,13 @@ type AppState = Arc<RwLock<HashMap<Uuid, Person>>>;
 
 #[tokio::main]
 async fn main() {
-    let mut people: HashMap<Uuid, Person> = HashMap::new();
+    let port = env::var("PORT")
+        .ok()
+        .and_then(|port| port.parse::<u16>().ok())
+        .unwrap_or(9999);
 
-    let person = Person {
-        id: Uuid::now_v7(),
-        name: String::from("Rodrigo Navarro"),
-        nick: String::from("reu"),
-        birth_date: date!(1986 - 03 - 31),
-        stack: None,
-    };
-
-    people.insert(person.id, person);
-
-    let app_state: AppState = Arc::new(RwLock::new(people));
+    let people: HashMap<Uuid, Person> = HashMap::new();
+    let app_state = Arc::new(RwLock::new(people));
 
     let app = Router::new()
         .route("/pessoas", get(search_people))
@@ -62,7 +56,7 @@ async fn main() {
         .route("/contagem-pessoas", get(count_people))
         .with_state(app_state);
 
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+    axum::Server::bind(&SocketAddr::from(([0, 0, 0, 0], port)))
         .serve(app.into_make_service())
         .await
         .unwrap();
