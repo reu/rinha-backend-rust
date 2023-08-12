@@ -13,4 +13,5 @@ https://www.youtube.com/watch?v=aXQenZGvLrQ
 
 ### Parte 2 - Persistência menos rápida com Postgres
 
-TBD
+[![Parte 01](.github/live02.png)](https://www.youtube.com/watch?v=zkP6zA69Vd4)
+https://www.youtube.com/watch?v=zkP6zA69Vd4
