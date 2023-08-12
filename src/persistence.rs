@@ -62,7 +62,7 @@ impl PostgresRepository {
             LIMIT 50
             ",
         )
-        .bind(query)
+        .bind(query.replace(' ', "*"))
         .fetch_all(&self.pool)
         .await
     }
