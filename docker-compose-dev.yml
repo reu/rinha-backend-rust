@@ -1,0 +1,14 @@
+version: "3.5"
+
+services:
+  postgres:
+    container_name: rinha_backend_postgres
+    image: postgres:15
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_USER: rinha
+      POSTGRES_PASSWORD: rinha
+      POSTGRES_DB: rinha
+    ports:
+      - "5432:5432"
