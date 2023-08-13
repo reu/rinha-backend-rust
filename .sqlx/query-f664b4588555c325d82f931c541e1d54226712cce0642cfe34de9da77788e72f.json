@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, name, nick, birth_date, stack\n            FROM people\n            WHERE to_tsquery('people', $1) @@ search\n            LIMIT 50\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "nick",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "birth_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 4,
+        "name": "stack",
+        "type_info": "VarcharArray"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "f664b4588555c325d82f931c541e1d54226712cce0642cfe34de9da77788e72f"
+}

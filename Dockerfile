@@ -9,6 +9,7 @@ COPY .cargo /app/.cargo
 RUN cargo build --release
 
 COPY src /app/src
+COPY .sqlx /app/.sqlx
 RUN touch src/main.rs
 RUN cargo build --release
 

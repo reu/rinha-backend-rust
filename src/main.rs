@@ -156,10 +156,9 @@ async fn create_person(
     Json(new_person): Json<NewPerson>,
 ) -> impl IntoResponse {
     match people.create_person(new_person).await {
-        Ok(person) => Ok((
+        Ok(id) => Ok((
             StatusCode::CREATED,
-            [(header::LOCATION, format!("/pessoas/{}", person.id))],
-            Json(person),
+            [(header::LOCATION, format!("/pessoas/{}", id))],
         )),
         Err(sqlx::Error::Database(err)) if err.is_unique_violation() => {
             Err(StatusCode::UNPROCESSABLE_ENTITY)
