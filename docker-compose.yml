@@ -14,8 +14,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: '0.5GB'
+          cpus: "0.25"
+          memory: "0.5GB"
 
   api2:
     build: .
@@ -30,8 +30,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: '0.5GB'
+          cpus: "0.25"
+          memory: "0.5GB"
 
   nginx:
     image: nginx:latest
@@ -47,8 +47,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: '0.5GB'
+          cpus: "0.5"
+          memory: "0.5GB"
 
   db:
     image: postgres:15
@@ -58,3 +58,10 @@ services:
       POSTGRES_USER: rinha
       POSTGRES_PASSWORD: rinha
       POSTGRES_DB: rinha
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1.5GB"
