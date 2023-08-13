@@ -19,7 +19,7 @@ CREATE TABLE people (
   birth_date DATE NOT NULL,
   stack VARCHAR(32)[],
   search TSVECTOR GENERATED ALWAYS AS (
-    TO_TSVECTOR('people', name || ' ' || nick || ' ' || ARRAY_TO_STRING_IMMUTABLE(stack, ' '))
+    TO_TSVECTOR('people', name || ' ' || nick || ' ' || COALESCE(ARRAY_TO_STRING_IMMUTABLE(stack, ' '), ''))
   ) STORED,
   CONSTRAINT unique_nick UNIQUE (nick)
 );
