@@ -1,5 +1,4 @@
-#![allow(unused)]
-use sqlx::{postgres::PgPoolOptions, PgPool, Row};
+use sqlx::{postgres::PgPoolOptions, PgPool};
 use uuid::Uuid;
 
 use crate::{NewPerson, Person};
