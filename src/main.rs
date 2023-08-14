@@ -105,7 +105,14 @@ async fn main() {
     let database_url = env::var("DATABASE_URL")
         .unwrap_or(String::from("postgres://rinha:rinha@localhost:5432/rinha"));
 
-    let repo = PostgresRepository::connect(database_url).await;
+    let database_pool_size = env::var("DATABASE_POOL")
+        .ok()
+        .and_then(|port| port.parse::<u32>().ok())
+        .unwrap_or(30);
+
+    let repo = PostgresRepository::connect(&database_url, database_pool_size)
+        .await
+        .unwrap();
 
     let app_state = Arc::new(repo);
 

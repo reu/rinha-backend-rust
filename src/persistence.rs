@@ -8,14 +8,13 @@ pub struct PostgresRepository {
 }
 
 impl PostgresRepository {
-    pub async fn connect(url: String) -> Self {
-        PostgresRepository {
+    pub async fn connect(url: &str, pool_size: u32) -> Result<Self, sqlx::Error> {
+        Ok(PostgresRepository {
             pool: PgPoolOptions::new()
-                .max_connections(30)
-                .connect(&url)
-                .await
-                .unwrap(),
-        }
+                .max_connections(pool_size)
+                .connect(url)
+                .await?,
+        })
     }
 
     pub async fn find_person(&self, id: Uuid) -> Result<Option<Person>, sqlx::Error> {
