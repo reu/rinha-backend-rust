@@ -69,10 +69,11 @@ impl PostgresRepository {
         .await
     }
 
-    pub async fn count_people(&self) -> Result<i64, sqlx::Error> {
-        sqlx::query!("SELECT count(*) AS count FROM people")
+    pub async fn count_people(&self) -> Result<u64, sqlx::Error> {
+        sqlx::query!("SELECT COUNT(*) AS count FROM people")
             .fetch_one(&self.pool)
             .await
             .map(|row| row.count.unwrap_or_default())
+            .map(|count| count.unsigned_abs())
     }
 }
