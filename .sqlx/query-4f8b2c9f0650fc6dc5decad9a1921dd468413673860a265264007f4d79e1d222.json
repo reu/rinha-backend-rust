@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO people (id, name, nick, birth_date, stack)\n            VALUES ($1, $2, $3, $4, $5)\n            RETURNING id, name, nick, birth_date, stack\n            ",
+  "query": "\n            SELECT id, name, nick, birth_date, stack\n            FROM people\n            WHERE WEBSEARCH_TO_TSQUERY('people', $1) @@ search\n            LIMIT 50\n            ",
   "describe": {
     "columns": [
       {
@@ -31,11 +31,7 @@
     ],
     "parameters": {
       "Left": [
-        "Uuid",
-        "Varchar",
-        "Varchar",
-        "Date",
-        "VarcharArray"
+        "Text"
       ]
     },
     "nullable": [
@@ -46,5 +42,5 @@
       true
     ]
   },
-  "hash": "544dfa0164d4a203127230f6e7cc20ef7fb652377443adcaafda66f82d44239e"
+  "hash": "4f8b2c9f0650fc6dc5decad9a1921dd468413673860a265264007f4d79e1d222"
 }
