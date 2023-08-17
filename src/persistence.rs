@@ -59,10 +59,10 @@ impl PostgresRepository {
             "
             SELECT id, name, nick, birth_date, stack
             FROM people
-            WHERE WEBSEARCH_TO_TSQUERY('people', $1) @@ search
+            WHERE search ILIKE $1
             LIMIT 50
             ",
-            query,
+            format!("%{query}%"),
         )
         .fetch_all(&self.pool)
         .await

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT id, name, nick, birth_date, stack\n            FROM people\n            WHERE WEBSEARCH_TO_TSQUERY('people', $1) @@ search\n            LIMIT 50\n            ",
+  "query": "\n            SELECT id, name, nick, birth_date, stack\n            FROM people\n            WHERE search ILIKE $1\n            LIMIT 50\n            ",
   "describe": {
     "columns": [
       {
@@ -42,5 +42,5 @@
       true
     ]
   },
-  "hash": "4f8b2c9f0650fc6dc5decad9a1921dd468413673860a265264007f4d79e1d222"
+  "hash": "f2a03517fae9c6a555358b3bd1ac0cad2164791f0238c91be6f3ae48233e7df4"
 }
