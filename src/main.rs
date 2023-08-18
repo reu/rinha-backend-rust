@@ -7,11 +7,13 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use persistence::PostgresRepository;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::domain::NewPerson;
+use crate::{
+    domain::NewPerson,
+    persistence::{PersistenceError, PostgresRepository},
+};
 
 mod domain;
 mod persistence;
@@ -90,9 +92,7 @@ async fn create_person(
             StatusCode::CREATED,
             [(header::LOCATION, format!("/pessoas/{}", id))],
         )),
-        Err(sqlx::Error::Database(err)) if err.is_unique_violation() => {
-            Err(StatusCode::UNPROCESSABLE_ENTITY)
-        }
+        Err(PersistenceError::UniqueViolation) => Err(StatusCode::UNPROCESSABLE_ENTITY),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }

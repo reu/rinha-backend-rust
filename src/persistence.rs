@@ -1,7 +1,27 @@
+use std::error::Error;
+
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use uuid::Uuid;
 
 use crate::domain::{NewPerson, Person};
+
+pub enum PersistenceError {
+    UniqueViolation,
+    DatabaseError(Box<dyn Error + Send + Sync>),
+}
+
+impl From<sqlx::Error> for PersistenceError {
+    fn from(error: sqlx::Error) -> Self {
+        match error {
+            sqlx::Error::Database(err) if err.is_unique_violation() => {
+                PersistenceError::UniqueViolation
+            }
+            _ => PersistenceError::DatabaseError(Box::new(error)),
+        }
+    }
+}
+
+type PersistenceResult<T> = Result<T, PersistenceError>;
 
 pub struct PostgresRepository {
     pool: PgPool,
@@ -17,7 +37,7 @@ impl PostgresRepository {
         })
     }
 
-    pub async fn find_person(&self, id: Uuid) -> Result<Option<Person>, sqlx::Error> {
+    pub async fn find_person(&self, id: Uuid) -> PersistenceResult<Option<Person>> {
         sqlx::query_as(
             "
             SELECT id, name, nick, birth_date, stack
@@ -28,9 +48,10 @@ impl PostgresRepository {
         .bind(id)
         .fetch_optional(&self.pool)
         .await
+        .map_err(PersistenceError::from)
     }
 
-    pub async fn create_person(&self, new_person: NewPerson) -> Result<Uuid, sqlx::Error> {
+    pub async fn create_person(&self, new_person: NewPerson) -> PersistenceResult<Uuid> {
         let stack = new_person
             .stack
             .map(|stack| stack.into_iter().map(String::from).collect::<Vec<_>>());
@@ -50,9 +71,10 @@ impl PostgresRepository {
         .fetch_one(&self.pool)
         .await
         .map(|row| row.id)
+        .map_err(PersistenceError::from)
     }
 
-    pub async fn search_people(&self, query: &str) -> Result<Vec<Person>, sqlx::Error> {
+    pub async fn search_people(&self, query: &str) -> PersistenceResult<Vec<Person>> {
         sqlx::query_as(
             "
             SELECT id, name, nick, birth_date, stack
@@ -64,13 +86,15 @@ impl PostgresRepository {
         .bind(format!("%{query}%"))
         .fetch_all(&self.pool)
         .await
+        .map_err(PersistenceError::from)
     }
 
-    pub async fn count_people(&self) -> Result<u64, sqlx::Error> {
+    pub async fn count_people(&self) -> PersistenceResult<u64> {
         sqlx::query!("SELECT COUNT(*) AS count FROM people")
             .fetch_one(&self.pool)
             .await
             .map(|row| row.count.unwrap_or_default())
             .map(|count| count.unsigned_abs())
+            .map_err(PersistenceError::from)
     }
 }
