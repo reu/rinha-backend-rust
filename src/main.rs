@@ -20,18 +20,19 @@ time::serde::format_description!(date_format, Date, "[year]-[month]-[day]");
 pub struct Person {
     pub id: Uuid,
     #[serde(rename = "nome")]
-    pub name: String,
+    pub name: PersonName,
     #[serde(rename = "apelido")]
-    pub nick: String,
+    pub nick: Nick,
     #[serde(rename = "nascimento", with = "date_format")]
     pub birth_date: Date,
-    pub stack: Option<Vec<String>>,
+    pub stack: Option<Vec<Tech>>,
 }
 
 macro_rules! new_string_type {
     ($type:ident, max_length = $max_length:expr, error = $error_message:expr) => {
-        #[derive(Clone, Deserialize)]
+        #[derive(Clone, Serialize, Deserialize, sqlx::Type)]
         #[serde(try_from = "String")]
+        #[sqlx(transparent)]
         pub struct $type(String);
 
         impl TryFrom<String> for $type {

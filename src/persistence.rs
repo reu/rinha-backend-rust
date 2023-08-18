@@ -18,15 +18,14 @@ impl PostgresRepository {
     }
 
     pub async fn find_person(&self, id: Uuid) -> Result<Option<Person>, sqlx::Error> {
-        sqlx::query_as!(
-            Person,
+        sqlx::query_as(
             "
             SELECT id, name, nick, birth_date, stack
             FROM people
             WHERE id = $1
             ",
-            id,
         )
+        .bind(id)
         .fetch_optional(&self.pool)
         .await
     }
@@ -54,16 +53,15 @@ impl PostgresRepository {
     }
 
     pub async fn search_people(&self, query: String) -> Result<Vec<Person>, sqlx::Error> {
-        sqlx::query_as!(
-            Person,
+        sqlx::query_as(
             "
             SELECT id, name, nick, birth_date, stack
             FROM people
             WHERE search ILIKE $1
             LIMIT 50
             ",
-            format!("%{query}%"),
         )
+        .bind(format!("%{query}%"))
         .fetch_all(&self.pool)
         .await
     }
