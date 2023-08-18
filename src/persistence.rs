@@ -1,7 +1,7 @@
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use uuid::Uuid;
 
-use crate::{NewPerson, Person};
+use crate::domain::{NewPerson, Person};
 
 pub struct PostgresRepository {
     pool: PgPool,
@@ -33,7 +33,7 @@ impl PostgresRepository {
     pub async fn create_person(&self, new_person: NewPerson) -> Result<Uuid, sqlx::Error> {
         let stack = new_person
             .stack
-            .map(|stack| stack.into_iter().map(String::from).collect::<Vec<String>>());
+            .map(|stack| stack.into_iter().map(String::from).collect::<Vec<_>>());
 
         sqlx::query!(
             "
@@ -42,8 +42,8 @@ impl PostgresRepository {
             RETURNING id
             ",
             Uuid::now_v7(),
-            new_person.name.0,
-            new_person.nick.0,
+            new_person.name.as_str(),
+            new_person.nick.as_str(),
             new_person.birth_date,
             stack.as_ref().map(|stack| stack.as_slice()),
         )
@@ -52,7 +52,7 @@ impl PostgresRepository {
         .map(|row| row.id)
     }
 
-    pub async fn search_people(&self, query: String) -> Result<Vec<Person>, sqlx::Error> {
+    pub async fn search_people(&self, query: &str) -> Result<Vec<Person>, sqlx::Error> {
         sqlx::query_as(
             "
             SELECT id, name, nick, birth_date, stack
