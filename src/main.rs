@@ -74,10 +74,7 @@ async fn find_person(
     Path(person_id): Path<Uuid>,
 ) -> impl IntoResponse {
     match people.find_person(person_id).await {
-        Ok(Some(person)) => Ok((
-            [(header::CACHE_CONTROL, "public, max-age=604800, immutable")],
-            Json(person),
-        )),
+        Ok(Some(person)) => Ok(Json(person)),
         Ok(None) => Err(StatusCode::NOT_FOUND),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
