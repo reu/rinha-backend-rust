@@ -13,5 +13,11 @@ https://www.youtube.com/watch?v=aXQenZGvLrQ
 
 ### Parte 2 - Persistência menos rápida com Postgres
 
-[![Parte 01](.github/live02.png)](https://www.youtube.com/watch?v=zkP6zA69Vd4)
+[![Parte 02](.github/live02.png)](https://www.youtube.com/watch?v=zkP6zA69Vd4)
 https://www.youtube.com/watch?v=zkP6zA69Vd4
+
+
+### Parte 3 - Refatoração e introdução a macros
+
+[![Parte 03](.github/live03.png)](https://www.youtube.com/watch?v=5k52-nKoYfE)
+https://www.youtube.com/watch?v=5k52-nKoYfE
