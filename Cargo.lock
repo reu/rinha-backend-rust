@@ -254,6 +254,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "dashmap"
+version = "5.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6943ae99c34386c84a470c499d3414f66502a41340aa895406e0d2e4a207b91d"
+dependencies = [
+ "cfg-if",
+ "hashbrown",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core",
+]
+
+[[package]]
 name = "der"
 version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -996,6 +1009,7 @@ name = "rinha"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "dashmap",
  "serde",
  "serde_json",
  "sqlx",

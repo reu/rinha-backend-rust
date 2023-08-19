@@ -19,3 +19,23 @@ CREATE TABLE people (
 );
 
 CREATE INDEX people_search_index ON people USING GIST (search gist_trgm_ops);
+
+CREATE OR REPLACE FUNCTION notify_person_created() RETURNS TRIGGER as $notify_person_created$
+BEGIN
+  IF (TG_OP = 'INSERT') THEN
+    PERFORM PG_NOTIFY(
+      'person_created',
+      JSON_BUILD_OBJECT(
+        'id', NEW.id,
+        'nome', NEW.name,
+        'apelido', NEW.nick,
+        'nascimento', NEW.birth_date,
+        'stack', ARRAY_TO_JSON(NEW.stack::VARCHAR(32)[])
+      )::TEXT
+    );
+  END IF;
+  RETURN NEW;
+END;
+$notify_person_created$ LANGUAGE plpgsql;
+
+CREATE TRIGGER notify_person_created AFTER INSERT ON people FOR EACH ROW EXECUTE PROCEDURE notify_person_created();

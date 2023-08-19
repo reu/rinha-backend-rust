@@ -1,6 +1,10 @@
-use std::error::Error;
+use std::{error::Error, sync::Arc};
 
-use sqlx::{postgres::PgPoolOptions, PgPool};
+use dashmap::DashMap;
+use sqlx::{
+    postgres::{PgListener, PgPoolOptions},
+    PgPool,
+};
 use uuid::Uuid;
 
 use crate::domain::{NewPerson, Person};
@@ -25,19 +29,41 @@ type PersistenceResult<T> = Result<T, PersistenceError>;
 
 pub struct PostgresRepository {
     pool: PgPool,
+    cache: Arc<DashMap<Uuid, Person>>,
 }
 
 impl PostgresRepository {
     pub async fn connect(url: &str, pool_size: u32) -> Result<Self, sqlx::Error> {
-        Ok(PostgresRepository {
-            pool: PgPoolOptions::new()
-                .max_connections(pool_size)
-                .connect(url)
-                .await?,
-        })
+        let pool = PgPoolOptions::new()
+            .max_connections(pool_size)
+            .connect(url)
+            .await?;
+
+        let cache = Arc::new(DashMap::with_capacity(30_000));
+
+        tokio::spawn({
+            let pool = pool.clone();
+            let cache = cache.clone();
+            async move {
+                if let Ok(mut listener) = PgListener::connect_with(&pool).await {
+                    listener.listen("person_created").await.ok();
+                    while let Ok(msg) = listener.recv().await {
+                        if let Ok(person) = serde_json::from_str::<Person>(msg.payload()) {
+                            cache.insert(person.id, person);
+                        }
+                    }
+                }
+            }
+        });
+
+        Ok(PostgresRepository { pool, cache })
     }
 
     pub async fn find_person(&self, id: Uuid) -> PersistenceResult<Option<Person>> {
+        if let Some(person) = self.cache.get(&id).map(|entry| entry.value().clone()) {
+            return Ok(Some(person))
+        }
+
         sqlx::query_as(
             "
             SELECT id, name, nick, birth_date, stack

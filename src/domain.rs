@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use time::Date;
 use uuid::Uuid;
 
-#[derive(Clone, Serialize, sqlx::FromRow)]
+#[derive(Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Person {
     pub id: Uuid,
     #[serde(rename = "nome")]
