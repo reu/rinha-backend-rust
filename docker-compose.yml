@@ -52,6 +52,7 @@ services:
     image: postgres:15
     volumes:
       - ./db:/docker-entrypoint-initdb.d
+    command: postgres -c log_min_messages=FATAL
     environment:
       POSTGRES_USER: rinha
       POSTGRES_PASSWORD: rinha
