@@ -14,8 +14,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.1"
-          memory: "0.25GB"
+          cpus: "0.15"
+          memory: "0.5GB"
 
   api2:
     build: .
@@ -30,8 +30,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.1"
-          memory: "0.25GB"
+          cpus: "0.15"
+          memory: "0.5GB"
 
   nginx:
     image: nginx:latest
@@ -45,8 +45,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: "1GB"
+          cpus: "0.4"
+          memory: "0.5GB"
 
   db:
     image: postgres:15
