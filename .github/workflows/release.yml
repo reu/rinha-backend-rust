@@ -1,0 +1,28 @@
+name: Release
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  release:
+    name: Publish to Dockerhub
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get release version
+        id: get_version
+        uses: battila7/get-version-action@v2
+
+      - run: docker login -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_PASS }}
+
+      - run: docker build . -t rinha
+      - run: docker tag rinha rnavarro/rinha-backend-axum:latest
+      - run: docker tag rinha rnavarro/rinha-backend-axum:${{ steps.get_version.outputs.major }}
+      - run: docker tag rinha rnavarro/rinha-backend-axum:${{ steps.get_version.outputs.major }}.${{ steps.get_version.outputs.minor }}
+      - run: docker tag rinha rnavarro/rinha-backend-axum:${{ steps.get_version.outputs.version-without-v }}
+
+      - run: docker push rnavarro/rinha-backend-axum:latest
+      - run: docker push rnavarro/rinha-backend-axum:${{ steps.get_version.outputs.major }}
+      - run: docker push rnavarro/rinha-backend-axum:${{ steps.get_version.outputs.major }}.${{ steps.get_version.outputs.minor }}
+      - run: docker push rnavarro/rinha-backend-axum:${{ steps.get_version.outputs.version-without-v }}
