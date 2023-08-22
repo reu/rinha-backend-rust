@@ -18,7 +18,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.15"
+          cpus: "0.25"
           memory: "0.5GB"
 
   api2:
@@ -38,7 +38,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.15"
+          cpus: "0.25"
           memory: "0.5GB"
 
   nginx:
@@ -53,8 +53,13 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.4"
+          cpus: "0.3"
           memory: "0.5GB"
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 40000
+        hard: 40000
 
   db:
     image: postgres:15
@@ -70,5 +75,5 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.8"
+          cpus: "0.7"
           memory: "1.5GB"
