@@ -1,6 +1,6 @@
 use std::{error::Error, sync::Arc};
 
-use dashmap::DashMap;
+use dashmap::{DashMap, DashSet};
 use rinha_core::{NewPerson, Person};
 use sqlx::{
     postgres::{PgListener, PgPoolOptions},
@@ -29,6 +29,7 @@ type PersistenceResult<T> = Result<T, PersistenceError>;
 pub struct PostgresRepository {
     pool: PgPool,
     cache: Arc<DashMap<Uuid, Person>>,
+    nicks: Arc<DashSet<String>>,
 }
 
 impl PostgresRepository {
@@ -39,15 +40,18 @@ impl PostgresRepository {
             .await?;
 
         let cache = Arc::new(DashMap::with_capacity(30_000));
+        let nicks = Arc::new(DashSet::new());
 
         tokio::spawn({
             let pool = pool.clone();
             let cache = cache.clone();
+            let nicks = nicks.clone();
             async move {
                 if let Ok(mut listener) = PgListener::connect_with(&pool).await {
                     listener.listen("person_created").await.ok();
                     while let Ok(msg) = listener.recv().await {
                         if let Ok(person) = serde_json::from_str::<Person>(msg.payload()) {
+                            nicks.insert(person.nick.as_str().to_owned());
                             cache.insert(person.id, person);
                         }
                     }
@@ -55,7 +59,7 @@ impl PostgresRepository {
             }
         });
 
-        Ok(PostgresRepository { pool, cache })
+        Ok(PostgresRepository { pool, cache, nicks })
     }
 
     pub async fn find_person(&self, id: Uuid) -> PersistenceResult<Option<Person>> {
@@ -77,6 +81,10 @@ impl PostgresRepository {
     }
 
     pub async fn create_person(&self, new_person: NewPerson) -> PersistenceResult<Uuid> {
+        if self.nicks.contains(new_person.nick.as_str()) {
+            return Err(PersistenceError::UniqueViolation);
+        }
+
         let stack = new_person
             .stack
             .map(|stack| stack.into_iter().map(String::from).collect::<Vec<_>>());
