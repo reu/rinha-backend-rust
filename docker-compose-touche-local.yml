@@ -9,6 +9,8 @@ services:
     environment:
       PORT: 80
       DATABASE_URL: postgres://rinha:rinha@db/rinha
+      DATABASE_POOL: 50
+      MAX_THREADS: 600
     depends_on:
       - db
     expose:
@@ -27,6 +29,8 @@ services:
     environment:
       PORT: 80
       DATABASE_URL: postgres://rinha:rinha@db/rinha
+      DATABASE_POOL: 50
+      MAX_THREADS: 600
     depends_on:
       - db
     expose:
@@ -56,7 +60,7 @@ services:
     image: postgres:15
     volumes:
       - ./db:/docker-entrypoint-initdb.d
-    command: postgres -c log_min_messages=FATAL
+    command: postgres -c log_min_messages=FATAL -c max_connections=110
     environment:
       POSTGRES_USER: rinha
       POSTGRES_PASSWORD: rinha
