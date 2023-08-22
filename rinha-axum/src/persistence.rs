@@ -1,13 +1,12 @@
 use std::{error::Error, sync::Arc};
 
 use dashmap::DashMap;
+use rinha_core::{NewPerson, Person};
 use sqlx::{
     postgres::{PgListener, PgPoolOptions},
     PgPool,
 };
 use uuid::Uuid;
-
-use crate::domain::{NewPerson, Person};
 
 pub enum PersistenceError {
     UniqueViolation,
@@ -61,7 +60,7 @@ impl PostgresRepository {
 
     pub async fn find_person(&self, id: Uuid) -> PersistenceResult<Option<Person>> {
         if let Some(person) = self.cache.get(&id).map(|entry| entry.value().clone()) {
-            return Ok(Some(person))
+            return Ok(Some(person));
         }
 
         sqlx::query_as(

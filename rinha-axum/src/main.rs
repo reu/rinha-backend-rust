@@ -7,15 +7,12 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use rinha_core::NewPerson;
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{
-    domain::NewPerson,
-    persistence::{PersistenceError, PostgresRepository},
-};
+use crate::persistence::{PersistenceError, PostgresRepository};
 
-mod domain;
 mod persistence;
 
 type AppState = Arc<PostgresRepository>;

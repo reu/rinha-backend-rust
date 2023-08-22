@@ -1,0 +1,20 @@
+[package]
+name = "rinha-axum"
+version = "0.1.0"
+edition = "2021"
+
+[profile.release]
+codegen-units = 1
+lto = true
+panic = "abort"
+
+[dependencies]
+axum = "0.6.20"
+dashmap = "5.5.0"
+rinha-core = { path = "../rinha-core", features = ["sqlx"] }
+serde = { version = "1.0.183", features = ["derive"] }
+serde_json = "1.0.104"
+sqlx = { version = "0.7.1", features = ["postgres", "runtime-tokio", "time", "uuid", "macros"] }
+time = { version = "0.3.25", features = ["macros", "serde", "formatting", "parsing"] }
+tokio = { version = "1.30.0", features = ["full"] }
+uuid = { version = "1.4.1", features = ["v7", "serde"] }

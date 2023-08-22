@@ -2,7 +2,9 @@ version: "3.5"
 
 services:
   api1:
-    build: .
+    build:
+      context: .
+      dockerfile: ./rinha-touche/Dockerfile
     hostname: api1
     environment:
       PORT: 80
@@ -18,7 +20,9 @@ services:
           memory: "0.5GB"
 
   api2:
-    build: .
+    build:
+      context: .
+      dockerfile: ./rinha-touche/Dockerfile
     hostname: api2
     environment:
       PORT: 80

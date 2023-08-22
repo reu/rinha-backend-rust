@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 use time::Date;
 use uuid::Uuid;
 
-#[derive(Clone, Serialize, Deserialize, sqlx::FromRow)]
+#[derive(Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "sqlx", derive(sqlx::FromRow))]
 pub struct Person {
     pub id: Uuid,
     #[serde(rename = "nome")]
@@ -27,9 +28,10 @@ pub struct NewPerson {
 
 macro_rules! new_string_type {
     ($type:ident, max_length = $max_length:expr, error = $error_message:expr) => {
-        #[derive(Clone, Serialize, Deserialize, sqlx::Type)]
+        #[derive(Clone, Serialize, Deserialize)]
         #[serde(try_from = "String")]
-        #[sqlx(transparent)]
+        #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
+        #[cfg_attr(feature = "sqlx", sqlx(transparent))]
         pub struct $type(String);
 
         impl $type {

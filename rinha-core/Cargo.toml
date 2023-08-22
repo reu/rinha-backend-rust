@@ -1,0 +1,14 @@
+[package]
+name = "rinha-core"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = []
+slqx = ["sqlx"]
+
+[dependencies]
+serde = { version = "1.0.183", features = ["derive"] }
+sqlx = { version = "0.7.1", optional = true, features = ["postgres", "runtime-tokio", "time", "uuid", "macros"] }
+time = { version = "0.3.25", features = ["macros", "serde", "formatting", "parsing"] }
+uuid = { version = "1.4.1", features = ["v7", "serde"] }
