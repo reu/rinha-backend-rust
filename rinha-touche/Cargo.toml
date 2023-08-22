@@ -9,6 +9,7 @@ lto = true
 panic = "abort"
 
 [dependencies]
+dashmap = "5.5.0"
 postgres = { version = "0.19.5", features = ["array-impls", "with-time-0_3", "with-uuid-1"] }
 r2d2 = "0.8.10"
 r2d2_postgres = "0.18.1"

@@ -1,6 +1,10 @@
-use std::{error::Error, fmt::Display, str::FromStr};
+use std::{error::Error, fmt::Display, str::FromStr, sync::Arc, thread};
 
-use postgres::{error::SqlState, Config as PgConfig, Error as PgError, NoTls, Row};
+use dashmap::{DashMap, DashSet};
+use postgres::{
+    error::SqlState, fallible_iterator::FallibleIterator, Config as PgConfig, Error as PgError,
+    NoTls, Row,
+};
 use r2d2::{Error as PoolError, Pool};
 use r2d2_postgres::PostgresConnectionManager;
 use rinha_core::{NewPerson, Nick, Person, PersonName};
@@ -73,9 +77,10 @@ impl From<PoolError> for PersistenceError {
     }
 }
 
-#[derive(Debug, Clone)]
 pub struct PostgresRepository {
     pool: Pool<PostgresConnectionManager<NoTls>>,
+    cache: Arc<DashMap<Uuid, Person>>,
+    nicks: Arc<DashSet<String>>,
 }
 
 impl PostgresRepository {
@@ -88,10 +93,35 @@ impl PostgresRepository {
             ))
             .unwrap();
 
-        Ok(Self { pool })
+        let cache = Arc::new(DashMap::new());
+        let nicks = Arc::new(DashSet::new());
+
+        thread::spawn({
+            let mut conn = pool.get()?;
+            let cache = cache.clone();
+            let nicks = nicks.clone();
+            move || {
+                conn.execute("LISTEN person_created", &[])?;
+                let mut notifications = conn.notifications();
+                notifications.blocking_iter().for_each(|msg| {
+                    if let Ok(person) = serde_json::from_str::<Person>(msg.payload()) {
+                        nicks.insert(person.nick.as_str().to_owned());
+                        cache.insert(person.id, person);
+                    }
+                    Ok(())
+                })?;
+                Ok::<_, Box<dyn Error + Send + Sync>>(())
+            }
+        });
+
+        Ok(Self { pool, cache, nicks })
     }
 
     pub fn create_person(&self, person: NewPerson) -> PersistenceResult<Uuid> {
+        if self.nicks.contains(person.nick.as_str()) {
+            return Err(PersistenceError::UniqueViolation);
+        }
+
         let mut conn = self.pool.get()?;
 
         let stmt = conn.prepare(
@@ -120,6 +150,10 @@ impl PostgresRepository {
     }
 
     pub fn find_person(&self, id: Uuid) -> PersistenceResult<Option<Person>> {
+        if let Some(person) = self.cache.get(&id).map(|entry| entry.value().clone()) {
+            return Ok(Some(person));
+        }
+
         let mut conn = self.pool.get()?;
 
         let stmt = conn.prepare(
